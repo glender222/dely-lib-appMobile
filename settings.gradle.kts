@@ -6,6 +6,8 @@ pluginManagement {
                 includeGroupByRegex("com\\.google.*")
                 includeGroupByRegex("androidx.*")
             }
+            maven { url = uri("https://artifacts.mercadolibre.com/repository/android-releases") }
+
         }
         mavenCentral()
         gradlePluginPortal()
@@ -16,6 +18,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven {
+            url = uri("https://artifacts.mercadolibre.com/repository/android-releases")
+        }
     }
 }
 
