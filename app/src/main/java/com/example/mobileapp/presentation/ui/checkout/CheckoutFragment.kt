@@ -19,6 +19,7 @@ import com.example.mobileapp.data.repository.DetalleCompraRepository
 import com.example.mobileapp.presentation.ui.carrito.CarritoItemCompleto
 import com.example.mobileapp.presentation.ui.carrito.CarritoViewModel
 import com.example.mobileapp.presentation.ui.carrito.CarritoViewModelFactory
+import com.example.mobileapp.presentation.ui.libro.PagoConfirmacionFragment
 import kotlinx.coroutines.launch
 
 class CheckoutFragment : Fragment(R.layout.fragment_checkout) {
@@ -83,11 +84,11 @@ class CheckoutFragment : Fragment(R.layout.fragment_checkout) {
                 return@setOnClickListener
             }
 
-            procesarPago(sessionId, direccion, distrito, calle, ciudad, items, progressBar, btnPagar)
+            procesarPagoCompleto(sessionId, direccion, distrito, calle, ciudad, items, progressBar, btnPagar)
         }
     }
 
-    private fun procesarPago(
+    private fun procesarPagoCompleto(
         sessionId: String,
         direccion: String,
         distrito: String,
@@ -103,9 +104,9 @@ class CheckoutFragment : Fragment(R.layout.fragment_checkout) {
                 btnPagar.isEnabled = false
                 btnPagar.text = "Procesando..."
 
-                // 1. Crear compra
+                // PASO 1: Crear compra
                 val compraDTO = CompraDTO(
-                    idUsuario = 0L, // El backend lo maneja automáticamente
+                    idUsuario = 0L, // El backend lo asigna automáticamente
                     direccionEnvio = direccion,
                     distrito = distrito,
                     calle = calle,
@@ -122,7 +123,8 @@ class CheckoutFragment : Fragment(R.layout.fragment_checkout) {
                 val compraCreada = compraResponse.body()!!
                 val compraId = compraCreada.idCompra!!
 
-                // 2. Crear detalles de compra
+                // PASO 2: Crear detalles de compra (ESTO ES LO QUE FALTABA)
+                var todosLosDetallesCreados = true
                 for (item in items) {
                     val detalleDTO = DetalleCompraDTO(
                         idCompra = compraId,
@@ -134,12 +136,17 @@ class CheckoutFragment : Fragment(R.layout.fragment_checkout) {
 
                     val detalleResponse = detalleCompraRepository.crearDetalleCompra(sessionId, detalleDTO)
                     if (!detalleResponse.isSuccessful) {
-                        mostrarError("Error al crear detalle: ${detalleResponse.code()}")
-                        return@launch
+                        mostrarError("Error al crear detalle para libro ${item.tituloLibro}: ${detalleResponse.code()}")
+                        todosLosDetallesCreados = false
+                        break
                     }
                 }
 
-                // 3. Crear preferencia de pago en Mercado Pago
+                if (!todosLosDetallesCreados) {
+                    return@launch
+                }
+
+                // PASO 3: Crear preferencia de pago en Mercado Pago
                 val preferenciaResponse = compraRepository.crearPreferenciaPago(sessionId, compraId)
                 if (!preferenciaResponse.isSuccessful) {
                     mostrarError("Error al crear preferencia de pago: ${preferenciaResponse.code()}")
@@ -148,16 +155,16 @@ class CheckoutFragment : Fragment(R.layout.fragment_checkout) {
 
                 val preference = preferenciaResponse.body()!!
 
-                // 4. Abrir Mercado Pago en navegador
+                // PASO 4: Abrir Mercado Pago en navegador
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(preference.initPoint))
                 startActivity(intent)
 
                 Toast.makeText(requireContext(), "Redirigiendo a Mercado Pago...", Toast.LENGTH_SHORT).show()
 
-                // 5. Limpiar carrito después del pago exitoso
+                // PASO 5: Limpiar carrito después del pago exitoso
                 carritoViewModel.limpiarCarrito(sessionId)
 
-                // 6. Navegar a confirmación
+                // PASO 6: Navegar a confirmación
                 val fragment = PagoConfirmacionFragment.newInstance(compraId, preference.totalAmount)
                 parentFragmentManager.beginTransaction()
                     .replace(R.id.fragmentContainer, fragment)
@@ -169,7 +176,7 @@ class CheckoutFragment : Fragment(R.layout.fragment_checkout) {
             } finally {
                 progressBar.visibility = View.GONE
                 btnPagar.isEnabled = true
-                btnPagar.text = "Pagar"
+                btnPagar.text = "Pagar con Mercado Pago"
             }
         }
     }

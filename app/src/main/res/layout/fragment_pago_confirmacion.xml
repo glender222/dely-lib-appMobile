@@ -1,70 +1,138 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:gravity="center">
+    android:background="#f8de7e">
 
-    <ImageView
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:src="@drawable/ic_check_circle"
-        android:layout_marginBottom="32dp"
-        android:tint="@android:color/holo_green_dark"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="¡Compra Realizada!"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="16dp"/>
-
-    <TextView
-        android:id="@+id/tvCompraId"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Compra ID: #12345"
-        android:textSize="16sp"
-        android:layout_marginBottom="8dp"/>
-
-    <TextView
-        android:id="@+id/tvTotal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Total: $99.99"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="16dp"/>
-
-    <TextView
-        android:id="@+id/tvEstado"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Estado: Procesando..."
-        android:textSize="16sp"
-        android:layout_marginBottom="16dp"/>
-
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:layout_marginBottom="32dp"/>
-
-    <Button
-        android:id="@+id/btnConsultarEstado"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Consultar Estado"
-        android:layout_marginBottom="16dp"/>
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center">
 
-    <Button
-        android:id="@+id/btnVolverInicio"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Volver al Inicio"
-        style="@style/Widget.Material3.Button.OutlinedButton"/>
+        <!-- Contenedor principal con estilo de card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_login_card"
+            android:padding="24dp"
+            android:gravity="center"
+            android:elevation="6dp">
 
-</LinearLayout>
+            <!-- Icono de éxito usando un drawable existente -->
+            <ImageView
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:src="@drawable/ic_shopping_cart"
+                android:layout_marginBottom="24dp"
+                app:tint="#4CAF50"
+                android:background="@drawable/circle_background"
+                android:padding="20dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="¡Compra Realizada!"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="#4B0082"
+                android:layout_marginBottom="16dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tu pedido ha sido procesado exitosamente"
+                android:textSize="14sp"
+                android:textColor="#666666"
+                android:textAlignment="center"
+                android:layout_marginBottom="24dp"/>
+
+            <!-- Información de la compra -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="#F5F5F5"
+                android:padding="16dp"
+                android:layout_marginBottom="24dp">
+
+                <TextView
+                    android:id="@+id/tvCompraId"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Compra ID: #12345"
+                    android:textSize="16sp"
+                    android:textColor="#4B0082"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp"/>
+
+                <TextView
+                    android:id="@+id/tvTotal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Total: $99.99"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#4B0082"
+                    android:layout_marginBottom="12dp"/>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#DDDDDD"
+                    android:layout_marginVertical="8dp"/>
+
+                <TextView
+                    android:id="@+id/tvEstado"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Estado: Procesando..."
+                    android:textSize="16sp"
+                    android:textColor="#666666"/>
+
+            </LinearLayout>
+
+            <!-- Progress Bar -->
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:layout_marginBottom="24dp"/>
+
+            <!-- Botones de acción -->
+            <Button
+                android:id="@+id/btnConsultarEstado"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Consultar Estado del Pago"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#4B0082"
+                android:layout_marginBottom="12dp"/>
+
+            <Button
+                android:id="@+id/btnVolverInicio"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Volver al Inicio"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                app:strokeColor="#4B0082"
+                android:textColor="#4B0082"/>
+
+        </LinearLayout>
+
+        <!-- Información adicional -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Recibirás una notificación cuando tu pedido cambie de estado."
+            android:textSize="12sp"
+            android:textColor="#666666"
+            android:textAlignment="center"
+            android:layout_marginTop="16dp"/>
+
+    </LinearLayout>
+</ScrollView>

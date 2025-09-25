@@ -35,7 +35,7 @@ class PagoConfirmacionFragment : Fragment(R.layout.fragment_pago_confirmacion) {
         val btnVolverInicio = view.findViewById<Button>(R.id.btnVolverInicio)
         val btnConsultarEstado = view.findViewById<Button>(R.id.btnConsultarEstado)
 
-        tvCompraId.text = "Compra ID: $compraId"
+        tvCompraId.text = "Compra ID: #$compraId"
         tvTotal.text = "Total: $${String.format("%.2f", totalAmount)}"
         tvEstado.text = "Estado: Procesando pago..."
 
@@ -51,48 +51,62 @@ class PagoConfirmacionFragment : Fragment(R.layout.fragment_pago_confirmacion) {
             consultarEstadoPago(tvEstado, progressBar)
         }
 
-        // Consultar estado automáticamente después de 5 segundos
+        // Consultar estado automáticamente cada 10 segundos
+        iniciarConsultaPeriodica(tvEstado, progressBar)
+    }
+
+    private fun iniciarConsultaPeriodica(tvEstado: TextView, progressBar: ProgressBar) {
         lifecycleScope.launch {
-            delay(5000)
-            consultarEstadoPago(tvEstado, progressBar)
+            repeat(6) { // 6 intentos = 1 minuto
+                delay(10000) // Esperar 10 segundos
+                consultarEstadoPago(tvEstado, progressBar, esSilencioso = true)
+            }
         }
     }
 
-    private fun consultarEstadoPago(tvEstado: TextView, progressBar: ProgressBar) {
+    private fun consultarEstadoPago(
+        tvEstado: TextView,
+        progressBar: ProgressBar,
+        esSilencioso: Boolean = false
+    ) {
         lifecycleScope.launch {
             try {
-                progressBar.visibility = View.VISIBLE
-                val sessionId = SessionStore.sessionId ?: ""
+                if (!esSilencioso) {
+                    progressBar.visibility = View.VISIBLE
+                }
 
+                val sessionId = SessionStore.sessionId ?: ""
                 val response = RetrofitClient.mercadoPagoApi.getPaymentStatus(sessionId, compraId)
 
                 if (response.isSuccessful) {
                     val status = response.body()
                     val estado = status?.get("estado") as? String ?: "PENDIENTE"
 
-                    tvEstado.text = when (estado) {
-                        "PAGADO" -> "Estado: ✅ Pago confirmado"
-                        "ENVIADO" -> "Estado: 📦 En preparación"
-                        "ENTREGADO" -> "Estado: ✅ Entregado"
-                        else -> "Estado: ⏳ Pendiente de pago"
+                    val (texto, color) = when (estado) {
+                        "PAGADO" -> "Estado: ✅ Pago confirmado" to android.R.color.holo_green_dark
+                        "ENVIADO" -> "Estado: 📦 Preparando envío" to android.R.color.holo_blue_dark
+                        "ENTREGADO" -> "Estado: ✅ Entregado" to android.R.color.holo_green_dark
+                        else -> "Estado: ⏳ Pendiente de pago" to android.R.color.holo_orange_dark
                     }
 
-                    val color = when (estado) {
-                        "PAGADO", "ENTREGADO" -> android.R.color.holo_green_dark
-                        "ENVIADO" -> android.R.color.holo_blue_dark
-                        else -> android.R.color.holo_orange_dark
-                    }
+                    tvEstado.text = texto
                     tvEstado.setTextColor(requireContext().getColor(color))
 
                 } else {
-                    tvEstado.text = "Estado: ❌ Error al consultar"
-                    tvEstado.setTextColor(requireContext().getColor(android.R.color.holo_red_dark))
+                    if (!esSilencioso) {
+                        tvEstado.text = "Estado: ❌ Error al consultar"
+                        tvEstado.setTextColor(requireContext().getColor(android.R.color.holo_red_dark))
+                    }
                 }
             } catch (e: Exception) {
-                tvEstado.text = "Estado: ❌ Error de conexión"
-                tvEstado.setTextColor(requireContext().getColor(android.R.color.holo_red_dark))
+                if (!esSilencioso) {
+                    tvEstado.text = "Estado: ❌ Error de conexión"
+                    tvEstado.setTextColor(requireContext().getColor(android.R.color.holo_red_dark))
+                }
             } finally {
-                progressBar.visibility = View.GONE
+                if (!esSilencioso) {
+                    progressBar.visibility = View.GONE
+                }
             }
         }
     }
