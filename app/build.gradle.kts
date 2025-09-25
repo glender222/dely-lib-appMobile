@@ -48,10 +48,7 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
-    // Especifique el SDK BOM con una definición de versión
-    implementation(platform("com.mercadopago.android.sdk:sdk-android-bom:<última versión del bom>"))
-    // Especifique las dependencias de la biblioteca SDK sin una definición de versión
-    implementation("com.mercadopago.android.sdk:core-methods")
+
 
 
 

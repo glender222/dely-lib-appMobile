@@ -56,7 +56,6 @@ class LibroAdapter(
 
         val imageUrl = when {
             !libro.imagenPortada.isNullOrBlank() && (libro.imagenPortada!!.startsWith("http") || libro.imagenPortada!!.startsWith("/")) -> {
-                // Si backend guardó URL o ruta relativa
                 if (libro.imagenPortada!!.startsWith("/")) "http://10.0.2.2:9090" + libro.imagenPortada else libro.imagenPortada
             }
             libro.idLibro != null -> "http://10.0.2.2:9090/api/v1/libros/${libro.idLibro}/imagen"
@@ -100,6 +99,7 @@ class LibroAdapter(
             onRemoveFromGenero?.invoke(libro)
         }
 
+        // ⭐ CLICK PARA VER DETALLE
         h.itemView.setOnClickListener { onClick(libro) }
     }
 

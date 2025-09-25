@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#f8de7e">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Header -->
+        <LinearLayout
+            android:id="@+id/header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="16dp"
+            android:background="#FFFFFF">
+
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@android:color/transparent"
+                android:src="@android:drawable/ic_media_previous"
+                android:contentDescription="Volver"
+                app:tint="#4B0082"/>
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Detalle del Libro"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:textColor="#4B0082"
+                android:gravity="center"/>
+        </LinearLayout>
+
+        <!-- Contenido principal -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#FFFFFF"
+            android:layout_margin="16dp"
+            android:padding="20dp"
+            android:elevation="4dp">
+
+            <!-- Imagen de portada -->
+            <ImageView
+                android:id="@+id/ivPortada"
+                android:layout_width="200dp"
+                android:layout_height="280dp"
+                android:layout_gravity="center"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_placeholder"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Título -->
+            <TextView
+                android:id="@+id/tvTitulo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Título del Libro"
+                android:textStyle="bold"
+                android:textSize="22sp"
+                android:textColor="#4B0082"
+                android:gravity="center"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Autor -->
+            <TextView
+                android:id="@+id/tvAutor"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Autor"
+                android:textSize="16sp"
+                android:textColor="#666666"
+                android:gravity="center"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Puntuación -->
+            <TextView
+                android:id="@+id/tvEstrellas"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="★★★★★"
+                android:textSize="18sp"
+                android:textColor="@android:color/holo_orange_light"
+                android:gravity="center"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Sinopsis -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Sinopsis"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:textColor="#4B0082"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:id="@+id/tvSinopsis"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Descripción del libro..."
+                android:textSize="14sp"
+                android:textColor="#333333"
+                android:lineSpacingMultiplier="1.2"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Información adicional -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#EEEEEE"
+                android:layout_marginVertical="8dp" />
+
+            <TextView
+                android:id="@+id/tvEditorial"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Editorial: "
+                android:textSize="14sp"
+                android:textColor="#666666"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/tvIsbn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="ISBN: "
+                android:textSize="14sp"
+                android:textColor="#666666"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/tvFechaLanzamiento"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Fecha: "
+                android:textSize="14sp"
+                android:textColor="#666666"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/tvIdioma"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Idioma: "
+                android:textSize="14sp"
+                android:textColor="#666666"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/tvNumPaginas"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Páginas: "
+                android:textSize="14sp"
+                android:textColor="#666666"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/tvEdicion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Edición: "
+                android:textSize="14sp"
+                android:textColor="#666666"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Botón agregar al carrito -->
+            <Button
+                android:id="@+id/btnAgregarCarrito"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Agregar al Carrito"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#4B0082"
+                android:layout_marginTop="16dp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

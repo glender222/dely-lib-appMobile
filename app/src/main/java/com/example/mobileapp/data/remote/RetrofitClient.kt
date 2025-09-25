@@ -1,6 +1,7 @@
 package com.example.mobileapp.data.remote
 
 import com.example.mobileapp.data.remote.api.AuthApi
+import com.example.mobileapp.data.remote.api.CarritoApi
 import com.example.mobileapp.data.remote.api.GeneroApi
 import com.example.mobileapp.data.remote.api.GeneroLibroApi
 import com.example.mobileapp.data.remote.api.LibroApi
@@ -59,4 +60,6 @@ object RetrofitClient {
     val generoApi: GeneroApi by lazy { retrofit.create(GeneroApi::class.java) }
     val generoLibroApi: GeneroLibroApi by lazy { retrofit.create(GeneroLibroApi::class.java) }
     val authApi: AuthApi by lazy { retrofit.create(AuthApi::class.java) }
+
+    val carritoApi: CarritoApi by lazy { retrofit.create(CarritoApi::class.java) }
 }

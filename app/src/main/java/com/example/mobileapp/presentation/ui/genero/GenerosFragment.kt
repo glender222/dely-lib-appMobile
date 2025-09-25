@@ -21,6 +21,7 @@ import com.example.mobileapp.data.repository.GeneroRepository
 import com.example.mobileapp.presentation.books.GeneroViewModel
 import com.example.mobileapp.presentation.books.GeneroViewModelFactory
 import com.example.mobileapp.presentation.logreg.LoginFragment
+import com.example.mobileapp.presentation.ui.libro.LibroDetalleFragment
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import androidx.fragment.app.FragmentManager
@@ -77,8 +78,14 @@ class GenerosFragment : Fragment(R.layout.fragment_generos) {
 
         val sessionId = SessionStore.sessionId ?: ""
         adapter = GeneroAdapter(sessionId, { libro ->
-            Toast.makeText(requireContext(), "Click en ${libro.titulo}", Toast.LENGTH_SHORT).show()
-            // TODO: abrir detalle del libro cuando lo tengas
+            // ⭐ NAVEGAR AL DETALLE DEL LIBRO
+            libro.idLibro?.let { libroId ->
+                val detalleFragment = LibroDetalleFragment.newInstance(libroId)
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.fragmentContainer, detalleFragment)
+                    .addToBackStack(null)
+                    .commit()
+            }
         }) { genero ->
             // Abrir pantalla detalle del género
             val frag = GeneroDetalleFragment.newInstance(genero.idGenero ?: -1L, genero.nombre ?: "")
@@ -186,6 +193,4 @@ class GenerosFragment : Fragment(R.layout.fragment_generos) {
             })
         }
     }
-
-    // Removed editorial/search global filters logic
 }
