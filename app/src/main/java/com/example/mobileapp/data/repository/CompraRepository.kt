@@ -3,7 +3,7 @@ package com.example.mobileapp.data.repository
 import com.example.mobileapp.data.remote.api.CompraApi
 import com.example.mobileapp.data.remote.api.MercadoPagoApi
 import com.example.mobileapp.data.remote.model.compra.CompraDTO
-import com.example.mobileapp.data.remote.model.pago.MercadoPagoDTO
+import com.example.mobileapp.data.remote.model.pago.MercadoPagoResponse
 import retrofit2.Response
 
 class CompraRepository(
@@ -15,7 +15,7 @@ class CompraRepository(
         return compraApi.crearCompra(sessionId, compra)
     }
 
-    suspend fun crearPreferenciaPago(sessionId: String, compraId: Long): Response<MercadoPagoDTO> {
+    suspend fun crearPreferenciaPago(sessionId: String, compraId: Long): Response<MercadoPagoResponse> {
         return mercadoPagoApi.createPreference(sessionId, mapOf("compraId" to compraId))
     }
 

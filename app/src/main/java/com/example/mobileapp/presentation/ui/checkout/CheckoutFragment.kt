@@ -1,6 +1,7 @@
 package com.example.mobileapp.presentation.ui.checkout
 
 
+
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -96,16 +97,9 @@ class CheckoutFragment : Fragment(R.layout.fragment_checkout) {
                 progressBar.visibility = View.VISIBLE
                 btnPagar.isEnabled = false
 
-                // Verificar que tenemos userId
-                val userId = SessionStore.userId
-                if (userId == null) {
-                    Toast.makeText(requireContext(), "Error: Usuario no autenticado", Toast.LENGTH_LONG).show()
-                    return@launch
-                }
-
-                // 1. Crear compra
+                // 1. Crear compra (SIN idUsuario - el backend lo manejará automáticamente)
                 val compraDTO = CompraDTO(
-                    idUsuario = userId,
+                    idUsuario = 0L, // El backend ignorará este valor y usará el sessionId
                     direccionEnvio = direccion,
                     distrito = distrito,
                     calle = calle,
@@ -115,7 +109,8 @@ class CheckoutFragment : Fragment(R.layout.fragment_checkout) {
 
                 val compraResponse = compraRepository.crearCompra(sessionId, compraDTO)
                 if (!compraResponse.isSuccessful) {
-                    Toast.makeText(requireContext(), "Error al crear compra: ${compraResponse.code()}", Toast.LENGTH_LONG).show()
+                    val errorMsg = "Error al crear compra: ${compraResponse.code()}"
+                    Toast.makeText(requireContext(), errorMsg, Toast.LENGTH_LONG).show()
                     return@launch
                 }
 
@@ -134,7 +129,8 @@ class CheckoutFragment : Fragment(R.layout.fragment_checkout) {
 
                     val detalleResponse = detalleCompraRepository.crearDetalleCompra(sessionId, detalleDTO)
                     if (!detalleResponse.isSuccessful) {
-                        Toast.makeText(requireContext(), "Error al crear detalle de compra", Toast.LENGTH_LONG).show()
+                        val errorMsg = "Error al crear detalle: ${detalleResponse.code()}"
+                        Toast.makeText(requireContext(), errorMsg, Toast.LENGTH_LONG).show()
                         return@launch
                     }
                 }
@@ -142,7 +138,8 @@ class CheckoutFragment : Fragment(R.layout.fragment_checkout) {
                 // 3. Crear preferencia de pago en Mercado Pago
                 val preferenceResponse = compraRepository.crearPreferenciaPago(sessionId, compraId)
                 if (!preferenceResponse.isSuccessful) {
-                    Toast.makeText(requireContext(), "Error al crear preferencia de pago: ${preferenceResponse.code()}", Toast.LENGTH_LONG).show()
+                    val errorMsg = "Error al crear preferencia de pago: ${preferenceResponse.code()}"
+                    Toast.makeText(requireContext(), errorMsg, Toast.LENGTH_LONG).show()
                     return@launch
                 }
 
