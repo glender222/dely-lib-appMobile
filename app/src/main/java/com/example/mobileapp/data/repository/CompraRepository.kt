@@ -1,0 +1,29 @@
+package com.example.mobileapp.data.repository
+
+import com.example.mobileapp.data.remote.api.CompraApi
+import com.example.mobileapp.data.remote.api.MercadoPagoApi
+import com.example.mobileapp.data.remote.model.compra.CompraDTO
+import com.example.mobileapp.data.remote.model.pago.MercadoPagoDTO
+import retrofit2.Response
+
+class CompraRepository(
+    private val compraApi: CompraApi,
+    private val mercadoPagoApi: MercadoPagoApi
+) {
+
+    suspend fun crearCompra(sessionId: String, compra: CompraDTO): Response<CompraDTO> {
+        return compraApi.crearCompra(sessionId, compra)
+    }
+
+    suspend fun crearPreferenciaPago(sessionId: String, compraId: Long): Response<MercadoPagoDTO> {
+        return mercadoPagoApi.createPreference(sessionId, mapOf("compraId" to compraId))
+    }
+
+    suspend fun obtenerMisCompras(sessionId: String): Response<List<CompraDTO>> {
+        return compraApi.getMyCompras(sessionId)
+    }
+
+    suspend fun obtenerCompraPorId(sessionId: String, compraId: Long): Response<CompraDTO> {
+        return compraApi.getCompraById(sessionId, compraId)
+    }
+}

@@ -1,7 +1,6 @@
 package com.example.mobileapp.presentation.ui.checkout
 
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -13,15 +12,13 @@ import androidx.lifecycle.lifecycleScope
 import com.example.mobileapp.R
 import com.example.mobileapp.data.remote.RetrofitClient
 import com.example.mobileapp.data.remote.SessionStore
-
-import com.example.mobileapp.data.remote.model.pago.CompraConPagoRequest
-import com.example.mobileapp.data.remote.model.pago.LibroCompraItem
+import com.example.mobileapp.data.remote.model.compra.CompraDTO
+import com.example.mobileapp.data.remote.model.compra.DetalleCompraDTO
 import com.example.mobileapp.data.repository.CarritoRepository
-import com.example.mobileapp.data.repository.PagoRepository
+import com.example.mobileapp.data.repository.CompraRepository
+import com.example.mobileapp.data.repository.DetalleCompraRepository
 import com.example.mobileapp.presentation.ui.carrito.CarritoViewModel
 import com.example.mobileapp.presentation.ui.carrito.CarritoViewModelFactory
-import com.example.mobileapp.presentation.ui.pago.PagoViewModel
-import com.example.mobileapp.presentation.ui.pago.PagoViewModelFactory
 import kotlinx.coroutines.launch
 
 class CheckoutFragment : Fragment(R.layout.fragment_checkout) {
@@ -30,9 +27,8 @@ class CheckoutFragment : Fragment(R.layout.fragment_checkout) {
         CarritoViewModelFactory(CarritoRepository(RetrofitClient.carritoApi))
     }
 
-    private val pagoViewModel: PagoViewModel by viewModels {
-        PagoViewModelFactory(PagoRepository(RetrofitClient.mercadoPagoApi, RetrofitClient.compraApi))
-    }
+    private val compraRepository = CompraRepository(RetrofitClient.compraApi, RetrofitClient.mercadoPagoApi)
+    private val detalleCompraRepository = DetalleCompraRepository(RetrofitClient.detalleCompraApi)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -63,46 +59,6 @@ class CheckoutFragment : Fragment(R.layout.fragment_checkout) {
             progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
 
-        pagoViewModel.loading.observe(viewLifecycleOwner) { isLoading ->
-            progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
-            btnPagar.isEnabled = !isLoading
-        }
-
-        pagoViewModel.error.observe(viewLifecycleOwner) { error ->
-            error?.let {
-                Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
-            }
-        }
-
-        pagoViewModel.compraCreada.observe(viewLifecycleOwner) { response ->
-            response?.let {
-                val compra = it["compra"] as? Map<String, Any>
-                val compraId = (compra?.get("idCompra") as? Double)?.toLong()
-
-                if (compraId != null) {
-                    // Crear preferencia de pago
-                    pagoViewModel.crearPreferenciaPago(sessionId, compraId)
-                } else {
-                    Toast.makeText(requireContext(), "Error: No se pudo obtener ID de compra", Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-
-        pagoViewModel.preferenceCreated.observe(viewLifecycleOwner) { preference ->
-            preference?.let {
-                // Abrir Mercado Pago en navegador
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(it.initPoint))
-                startActivity(intent)
-
-                Toast.makeText(requireContext(), "Redirigiendo a Mercado Pago...", Toast.LENGTH_SHORT).show()
-
-                // Volver al carrito después de un momento
-                view.postDelayed({
-                    parentFragmentManager.popBackStack()
-                }, 2000)
-            }
-        }
-
         btnPagar.setOnClickListener {
             val direccion = etDireccion.text.toString().trim()
             val distrito = etDistrito.text.toString().trim()
@@ -120,28 +76,98 @@ class CheckoutFragment : Fragment(R.layout.fragment_checkout) {
                 return@setOnClickListener
             }
 
-            // Convertir items del carrito a formato requerido
-            val libros = items.mapNotNull { item ->
-                val idLibro = item.idLibro
-                val precio = item.precioUnitario
-                if (idLibro != null && precio != null) {
-                    LibroCompraItem(
-                        idLibro = idLibro,
+            // Procesar pago sin ViewModels adicionales
+            procesarPago(sessionId, direccion, distrito, calle, ciudad, items, progressBar, btnPagar)
+        }
+    }
+
+    private fun procesarPago(
+        sessionId: String,
+        direccion: String,
+        distrito: String,
+        calle: String,
+        ciudad: String,
+        items: List<com.example.mobileapp.data.remote.model.carrito.CarritoDTO>,
+        progressBar: ProgressBar,
+        btnPagar: Button
+    ) {
+        lifecycleScope.launch {
+            try {
+                progressBar.visibility = View.VISIBLE
+                btnPagar.isEnabled = false
+
+                // Verificar que tenemos userId
+                val userId = SessionStore.userId
+                if (userId == null) {
+                    Toast.makeText(requireContext(), "Error: Usuario no autenticado", Toast.LENGTH_LONG).show()
+                    return@launch
+                }
+
+                // 1. Crear compra
+                val compraDTO = CompraDTO(
+                    idUsuario = userId,
+                    direccionEnvio = direccion,
+                    distrito = distrito,
+                    calle = calle,
+                    ciudad = ciudad,
+                    estadoProcesoCompra = "PENDIENTE"
+                )
+
+                val compraResponse = compraRepository.crearCompra(sessionId, compraDTO)
+                if (!compraResponse.isSuccessful) {
+                    Toast.makeText(requireContext(), "Error al crear compra: ${compraResponse.code()}", Toast.LENGTH_LONG).show()
+                    return@launch
+                }
+
+                val compraCreada = compraResponse.body()!!
+                val compraId = compraCreada.idCompra!!
+
+                // 2. Crear detalles de compra
+                for (item in items) {
+                    val detalleDTO = DetalleCompraDTO(
+                        idCompra = compraId,
+                        idLibro = item.idLibro!!,
                         cantidad = item.cantidad,
-                        precioUnitario = precio
+                        precioUnitario = item.precioUnitario!!,
+                        subtotal = item.precioUnitario!! * item.cantidad
                     )
-                } else null
+
+                    val detalleResponse = detalleCompraRepository.crearDetalleCompra(sessionId, detalleDTO)
+                    if (!detalleResponse.isSuccessful) {
+                        Toast.makeText(requireContext(), "Error al crear detalle de compra", Toast.LENGTH_LONG).show()
+                        return@launch
+                    }
+                }
+
+                // 3. Crear preferencia de pago en Mercado Pago
+                val preferenceResponse = compraRepository.crearPreferenciaPago(sessionId, compraId)
+                if (!preferenceResponse.isSuccessful) {
+                    Toast.makeText(requireContext(), "Error al crear preferencia de pago: ${preferenceResponse.code()}", Toast.LENGTH_LONG).show()
+                    return@launch
+                }
+
+                val preference = preferenceResponse.body()!!
+
+                // 4. Abrir Mercado Pago en navegador
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(preference.initPoint))
+                startActivity(intent)
+
+                Toast.makeText(requireContext(), "Redirigiendo a Mercado Pago...", Toast.LENGTH_SHORT).show()
+
+                // 5. Limpiar carrito después del pago exitoso
+                carritoViewModel.limpiarCarrito(sessionId)
+
+                // 6. Volver al carrito después de un momento
+                view?.postDelayed({
+                    parentFragmentManager.popBackStack()
+                }, 2000)
+
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_LONG).show()
+            } finally {
+                progressBar.visibility = View.GONE
+                btnPagar.isEnabled = true
             }
-
-            val compraRequest = CompraConPagoRequest(
-                direccionEnvio = direccion,
-                distrito = distrito,
-                calle = calle,
-                ciudad = ciudad,
-                libros = libros
-            )
-
-            pagoViewModel.crearCompraConPago(sessionId, compraRequest)
         }
     }
 

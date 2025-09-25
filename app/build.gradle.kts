@@ -53,8 +53,6 @@ dependencies {
 
 
 
-    implementation(platform(libs.mercadopago.sdk.bom))
-    implementation(libs.mercadopago.sdk.coreMethods)
 
 
 

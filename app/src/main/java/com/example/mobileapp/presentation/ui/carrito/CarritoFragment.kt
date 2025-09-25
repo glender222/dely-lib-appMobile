@@ -151,15 +151,7 @@ class CarritoFragment : Fragment(R.layout.fragment_carrito) {
     }
 
 
-    private fun crearCompraYNavegar(items: List<CarritoItemUI>) {
-        // TODO: Implementar creación de compra usando el endpoint /api/v1/compras/create-with-payment
-        // Luego navegar al CheckoutFragment con el ID de la compra
-        val checkoutFragment = CheckoutFragment.newInstance(123L) // Reemplazar con ID real
-        parentFragmentManager.beginTransaction()
-            .replace(R.id.fragmentContainer, checkoutFragment)
-            .addToBackStack(null)
-            .commit()
-    }
+
 
     private fun cargarCarrito() {
         val sessionId = SessionStore.sessionId ?: ""

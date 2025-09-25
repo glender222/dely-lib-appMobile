@@ -3,6 +3,7 @@ package com.example.mobileapp.data.remote
 import com.example.mobileapp.data.remote.api.AuthApi
 import com.example.mobileapp.data.remote.api.CarritoApi
 import com.example.mobileapp.data.remote.api.CompraApi
+import com.example.mobileapp.data.remote.api.DetalleCompraApi
 import com.example.mobileapp.data.remote.api.GeneroApi
 import com.example.mobileapp.data.remote.api.GeneroLibroApi
 import com.example.mobileapp.data.remote.api.InventarioApi
@@ -70,4 +71,8 @@ object RetrofitClient {
 
     val compraApi: CompraApi by lazy { retrofit.create(CompraApi::class.java) }
     val mercadoPagoApi: MercadoPagoApi by lazy { retrofit.create(MercadoPagoApi::class.java) }
+
+    val detalleCompraApi: DetalleCompraApi by lazy { retrofit.create(DetalleCompraApi::class.java) }
+
+
 }
