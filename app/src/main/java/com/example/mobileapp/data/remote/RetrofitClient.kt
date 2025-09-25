@@ -4,6 +4,7 @@ import com.example.mobileapp.data.remote.api.AuthApi
 import com.example.mobileapp.data.remote.api.CarritoApi
 import com.example.mobileapp.data.remote.api.GeneroApi
 import com.example.mobileapp.data.remote.api.GeneroLibroApi
+import com.example.mobileapp.data.remote.api.InventarioApi
 import com.example.mobileapp.data.remote.api.LibroApi
 import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
@@ -62,4 +63,6 @@ object RetrofitClient {
     val authApi: AuthApi by lazy { retrofit.create(AuthApi::class.java) }
 
     val carritoApi: CarritoApi by lazy { retrofit.create(CarritoApi::class.java) }
+
+    val inventarioApi: InventarioApi by lazy { retrofit.create(InventarioApi::class.java) }
 }

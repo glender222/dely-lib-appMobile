@@ -82,7 +82,7 @@
         android:layout_height="56dp"
         android:orientation="horizontal"
         android:gravity="center"
-        android:weightSum="4"
+        android:weightSum="5"
         android:background="@android:color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -125,6 +125,18 @@
             android:contentDescription="Agregar Libro"
             android:padding="8dp"
             android:visibility="gone"/>
+
+        <!-- NUEVO: Botón Inventario -->
+        <ImageView
+            android:id="@+id/navInventary"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:src="@drawable/ic_inventory"
+            android:contentDescription="Inventario"
+            android:padding="8dp"
+            android:visibility="gone"/>
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -26,6 +26,7 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import androidx.fragment.app.FragmentManager
 import com.example.mobileapp.presentation.ui.carrito.CarritoFragment
+import com.example.mobileapp.presentation.ui.inventario.InventarioFragment
 
 class GenerosFragment : Fragment(R.layout.fragment_generos) {
 
@@ -71,7 +72,7 @@ class GenerosFragment : Fragment(R.layout.fragment_generos) {
         val navCart = view.findViewById<ImageView>(R.id.navCart)
         val navOrders = view.findViewById<ImageView>(R.id.navOrders)
         val navAdd = view.findViewById<ImageView>(R.id.navAdd)
-
+        val navInventory = view.findViewById<ImageView>(R.id.navInventary)
         // Recycler + progress + filtros
         val rv = view.findViewById<RecyclerView>(R.id.rvGeneros)
         val progress = view.findViewById<ProgressBar>(R.id.progress)
@@ -130,7 +131,10 @@ class GenerosFragment : Fragment(R.layout.fragment_generos) {
             ?: requireContext()
                 .getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
                 .getString("USER_ROLE", ""))?.trim()
-        navAdd.visibility = if ("EMPRESA".equals(role, ignoreCase = true)) View.VISIBLE else View.GONE
+
+        val isEmpresa = "EMPRESA".equals(role, ignoreCase = true)
+        navAdd.visibility = if (isEmpresa) View.VISIBLE else View.GONE
+        navInventory.visibility = if (isEmpresa) View.VISIBLE else View.GONE // 👈 NUEVO
 
         // Clicks bottom bar
         navHome.setOnClickListener {
@@ -154,6 +158,15 @@ class GenerosFragment : Fragment(R.layout.fragment_generos) {
                 .addToBackStack(null)
                 .commit()
         }
+
+        // Clicks bottom bar
+        navInventory.setOnClickListener { // 👈 NUEVO
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, InventarioFragment.newInstance())
+                .addToBackStack(null)
+                .commit()
+        }
+
 
         // Cargar datos
         viewModel.cargarGeneros(SessionStore.sessionId ?: "")
