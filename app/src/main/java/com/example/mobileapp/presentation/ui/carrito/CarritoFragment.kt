@@ -16,6 +16,7 @@ import com.example.mobileapp.data.remote.RetrofitClient
 import com.example.mobileapp.data.remote.SessionStore
 import com.example.mobileapp.data.remote.model.carrito.CarritoDTO
 import com.example.mobileapp.data.repository.CarritoRepository
+import com.example.mobileapp.presentation.ui.checkout.CheckoutFragment
 import com.example.mobileapp.presentation.ui.libro.LibroDetalleFragment
 import kotlinx.coroutines.launch
 
@@ -114,8 +115,12 @@ class CarritoFragment : Fragment(R.layout.fragment_carrito) {
             if (items.isNullOrEmpty()) {
                 Toast.makeText(requireContext(), "El carrito está vacío", Toast.LENGTH_SHORT).show()
             } else {
-                // TODO: Navegar a pantalla de pago/checkout
-                Toast.makeText(requireContext(), "Proceder al pago - Próximamente", Toast.LENGTH_SHORT).show()
+                // Navegar a pantalla de checkout/pago
+                val fragment = CheckoutFragment.newInstance()
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.fragmentContainer, fragment)
+                    .addToBackStack(null)
+                    .commit()
             }
         }
 
@@ -143,6 +148,17 @@ class CarritoFragment : Fragment(R.layout.fragment_carrito) {
             val total = items.sumOf { (it.precioUnitario ?: 0.0) * it.cantidad }
             tvTotal.text = "Total: $${String.format("%.2f", total)}"
         }
+    }
+
+
+    private fun crearCompraYNavegar(items: List<CarritoItemUI>) {
+        // TODO: Implementar creación de compra usando el endpoint /api/v1/compras/create-with-payment
+        // Luego navegar al CheckoutFragment con el ID de la compra
+        val checkoutFragment = CheckoutFragment.newInstance(123L) // Reemplazar con ID real
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, checkoutFragment)
+            .addToBackStack(null)
+            .commit()
     }
 
     private fun cargarCarrito() {

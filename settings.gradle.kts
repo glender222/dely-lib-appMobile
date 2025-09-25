@@ -7,7 +7,9 @@ pluginManagement {
                 includeGroupByRegex("androidx.*")
             }
             maven { url = uri("https://artifacts.mercadolibre.com/repository/android-releases") }
-
+            content {
+                includeGroup("com.mercadopago.android.sdk")
+            }
         }
         mavenCentral()
         gradlePluginPortal()
@@ -20,6 +22,9 @@ dependencyResolutionManagement {
         mavenCentral()
         maven {
             url = uri("https://artifacts.mercadolibre.com/repository/android-releases")
+            content {
+                includeGroup("com.mercadopago.android.sdk")
+            }
         }
     }
 }
