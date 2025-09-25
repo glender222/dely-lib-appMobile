@@ -25,6 +25,7 @@ import com.example.mobileapp.presentation.ui.libro.LibroDetalleFragment
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import androidx.fragment.app.FragmentManager
+import com.example.mobileapp.presentation.ui.carrito.CarritoFragment
 
 class GenerosFragment : Fragment(R.layout.fragment_generos) {
 
@@ -136,8 +137,11 @@ class GenerosFragment : Fragment(R.layout.fragment_generos) {
             // Ya estás en home (géneros). Si usas más pantallas, podrías refrescar.
         }
         navCart.setOnClickListener {
-            // TODO: reemplazar por tu CarritoFragment cuando esté
-            Toast.makeText(requireContext(), "Ir al Carrito", Toast.LENGTH_SHORT).show()
+            // Navegar al CarritoFragment
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, CarritoFragment.newInstance())
+                .addToBackStack(null)
+                .commit()
         }
         navOrders.setOnClickListener {
             // TODO: reemplazar por tu OrdenesFragment cuando esté
