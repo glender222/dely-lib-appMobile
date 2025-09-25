@@ -48,11 +48,13 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
+    // 👈 Jetpack Compose BOM
+    implementation(platform("androidx.compose:compose-bom:2024.12.01"))
 
 
-    // 👈 NUEVO: Mercado Pago SDK moderno
-    implementation(platform("com.mercadopago.android.sdk:sdk-android-bom:2.8.0"))
-    implementation("com.mercadopago.android.sdk:core-methods")
+
+    implementation(platform(libs.mercadopago.sdk.bom))
+    implementation(libs.mercadopago.sdk.coreMethods)
 
 
 
