@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">MobileApp</string>
+    <string name="login_title">Login</string>
+        <string name="email_hint">Correo electrónico</string>
+        <string name="password_hint">Contraseña</string>
+        <string name="login_button">Login</string>
+        <string name="new_user_prompt">¿Eres nuevo usuario?</string>
+        <string name="register_button">Registrarse</string>
+    <string name="category_poetry">Poetry</string>
+    <string name="category_romance">Romance</string>
+    <string name="filter_misterio">MISTERIO</string>
+    <string name="filter_erotico">EROTICO</string>
+    <string name="filter_ciencia">CIENCIA</string>
+    <string-array name="idiomas_array">
+        <item>Español</item>
+        <item>Inglés</item>
+        <item>Francés</item>
+        <item>Alemán</item>
+        <item>Portugués</item>
+        <item>Italiano</item>
+    </string-array>
+    <string-array name="ediciones_array">
+        <item>Primera</item>
+        <item>Segunda</item>
+        <item>Tercera</item>
+        <item>Otra…</item>
+    </string-array>
+    <string name="isbn_helper">Ejemplo ISBN-13: 978-3-16-148410-0</string>
+    <string name="fecha_formato_helper">Formato: YYYY-MM-DD</string>
+</resources>

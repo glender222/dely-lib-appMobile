@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:background="#f8de7e"
+    android:padding="24dp">
+
+    <ImageView
+        android:id="@+id/logoBook"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_marginTop="180dp"
+        android:src="@drawable/ic_menu_book"
+        android:tint="#4B0082" />
+
+    <TextView
+        android:id="@+id/tvWelcome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Bienvenido a Dely-Lib"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="#4B0082"
+        android:gravity="center" />
+
+    <TextView
+        android:id="@+id/tvSubtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:text="Encuentra y abre tu mente a infinitas posibilidades"
+        android:textColor="#4B0082"/>
+
+    <Button
+        android:id="@+id/btnGetStarted"
+        android:layout_width="match_parent"
+        android:layout_height="54dp"
+        android:layout_marginTop="25dp"
+        android:text="Comenzar"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#4B0082"/>
+</LinearLayout>
