@@ -27,6 +27,11 @@ class LibroDetalleFragment : Fragment(R.layout.fragment_libro_detalle) {
     private lateinit var libro: LibroDTO
     private lateinit var carritoRepository: CarritoRepository
 
+    // 👈 NUEVAS VARIABLES PARA INVENTARIO
+    private var precioLibro: Double? = null
+    private var stockLibro: Int? = null
+    private var inventarioDisponible: Boolean = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -52,6 +57,10 @@ class LibroDetalleFragment : Fragment(R.layout.fragment_libro_detalle) {
         val tvEstrellas = view.findViewById<TextView>(R.id.tvEstrellas)
         val btnAgregarCarrito = view.findViewById<Button>(R.id.btnAgregarCarrito)
 
+        // 👈 NUEVOS ELEMENTOS PARA MOSTRAR PRECIO/STOCK
+        val tvPrecio = view.findViewById<TextView>(R.id.tvPrecio)
+        val tvStock = view.findViewById<TextView>(R.id.tvStock)
+
         btnBack.setOnClickListener {
             parentFragmentManager.popBackStack()
         }
@@ -63,8 +72,8 @@ class LibroDetalleFragment : Fragment(R.layout.fragment_libro_detalle) {
 
         btnAgregarCarrito.visibility = if (isCliente) View.VISIBLE else View.GONE
 
-        // Cargar detalles del libro
-        cargarLibro(libroId)
+        // 👈 CARGAR LIBRO + INVENTARIO
+        cargarLibroCompleto(libroId, tvPrecio, tvStock, btnAgregarCarrito)
 
         // Acción agregar al carrito
         btnAgregarCarrito.setOnClickListener {
@@ -72,17 +81,64 @@ class LibroDetalleFragment : Fragment(R.layout.fragment_libro_detalle) {
         }
     }
 
-    private fun cargarLibro(id: Long) {
+    // 👈 NUEVA FUNCIÓN QUE CARGA LIBRO + INVENTARIO
+    private fun cargarLibroCompleto(id: Long, tvPrecio: TextView, tvStock: TextView, btnCarrito: Button) {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val sessionId = SessionStore.sessionId ?: ""
-                val response = RetrofitClient.libroApi.findById(sessionId, id)
 
-                if (response.isSuccessful && response.body() != null) {
-                    libro = response.body()!!
+                // 1. Cargar datos del libro
+                val libroResponse = RetrofitClient.libroApi.findById(sessionId, id)
+                if (libroResponse.isSuccessful && libroResponse.body() != null) {
+                    libro = libroResponse.body()!!
                     mostrarDetallesLibro()
                 } else {
-                    Toast.makeText(requireContext(), "Error al cargar libro: ${response.code()}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Error al cargar libro: ${libroResponse.code()}", Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
+
+                // 2. 👈 CARGAR INVENTARIO DEL LIBRO
+                try {
+                    val inventarioResponse = RetrofitClient.inventarioApi.findByLibroId(sessionId, id)
+                    if (inventarioResponse.isSuccessful && inventarioResponse.body() != null) {
+                        val inventario = inventarioResponse.body()!!
+                        precioLibro = inventario.precio
+                        stockLibro = inventario.cantidadStock
+                        inventarioDisponible = true
+
+                        // Mostrar precio y stock
+                        tvPrecio.text = "Precio: $${String.format("%.2f", precioLibro ?: 0.0)}"
+                        tvStock.text = "Stock: ${stockLibro ?: 0} disponibles"
+
+                        // Habilitar/deshabilitar botón según stock
+                        val hayStock = (stockLibro ?: 0) > 0
+                        btnCarrito.isEnabled = hayStock && inventarioDisponible
+                        btnCarrito.text = if (hayStock) "Agregar al Carrito" else "Sin stock"
+                        btnCarrito.alpha = if (hayStock) 1.0f else 0.5f
+
+                        tvPrecio.visibility = View.VISIBLE
+                        tvStock.visibility = View.VISIBLE
+                    } else {
+                        // No hay inventario para este libro
+                        inventarioDisponible = false
+                        tvPrecio.text = "Precio: No disponible"
+                        tvStock.text = "Stock: No disponible"
+                        btnCarrito.isEnabled = false
+                        btnCarrito.text = "No disponible"
+                        btnCarrito.alpha = 0.5f
+
+                        tvPrecio.visibility = View.VISIBLE
+                        tvStock.visibility = View.VISIBLE
+                    }
+                } catch (e: Exception) {
+                    // Error al cargar inventario
+                    tvPrecio.text = "Precio: Error al cargar"
+                    tvStock.text = "Stock: Error al cargar"
+                    btnCarrito.isEnabled = false
+                    btnCarrito.alpha = 0.5f
+
+                    tvPrecio.visibility = View.VISIBLE
+                    tvStock.visibility = View.VISIBLE
                 }
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -145,6 +201,17 @@ class LibroDetalleFragment : Fragment(R.layout.fragment_libro_detalle) {
     }
 
     private fun agregarAlCarrito() {
+        // 👈 VALIDAR STOCK ANTES DE AGREGAR
+        if (!inventarioDisponible) {
+            Toast.makeText(requireContext(), "Este libro no está disponible", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if ((stockLibro ?: 0) <= 0) {
+            Toast.makeText(requireContext(), "Sin stock disponible", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val sessionId = SessionStore.sessionId ?: ""
@@ -156,16 +223,18 @@ class LibroDetalleFragment : Fragment(R.layout.fragment_libro_detalle) {
                     return@launch
                 }
 
+                // 👈 USAR PRECIO DEL INVENTARIO
                 val carritoItem = CarritoDTO(
                     idUsuario = userId,
                     idLibro = libro.idLibro!!,
-                    cantidad = 1
+                    cantidad = 1,
+                    precioUnitario = precioLibro // 👈 PRECIO DEL INVENTARIO
                 )
 
                 val response = carritoRepository.addToCart(sessionId, carritoItem)
 
                 if (response.isSuccessful) {
-                    Toast.makeText(requireContext(), "Libro agregado al carrito", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Libro agregado al carrito por $${String.format("%.2f", precioLibro ?: 0.0)}", Toast.LENGTH_SHORT).show()
                 } else {
                     val errorMsg = response.errorBody()?.string() ?: "Error desconocido"
                     Toast.makeText(requireContext(), "Error: $errorMsg", Toast.LENGTH_LONG).show()

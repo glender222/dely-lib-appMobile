@@ -49,6 +49,10 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
 
+    // 👈 NUEVO: Mercado Pago con BOM (método recomendado)
+    implementation(platform("com.mercadopago.android.sdk:sdk-android-bom:2.8.0"))
+    implementation("com.mercadopago.android.sdk:core-methods")
+    implementation("androidx.browser:browser:1.7.0") // Para abrir navegador
 
 
 
