@@ -1,5 +1,6 @@
 package com.example.mobileapp.presentation.ui.checkout
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -28,7 +29,8 @@ class CheckoutFragment : Fragment(R.layout.fragment_checkout) {
         CarritoViewModelFactory(CarritoRepository(RetrofitClient.carritoApi))
     }
 
-    private val compraRepository = CompraRepository(RetrofitClient.compraApi, RetrofitClient.mercadoPagoApi)
+    private val compraRepository =
+        CompraRepository(RetrofitClient.compraApi, RetrofitClient.mercadoPagoApi)
     private val detalleCompraRepository = DetalleCompraRepository(RetrofitClient.detalleCompraApi)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -45,6 +47,21 @@ class CheckoutFragment : Fragment(R.layout.fragment_checkout) {
 
         btnBack.setOnClickListener {
             parentFragmentManager.popBackStack()
+        }
+
+        // 👈 OBTENER userId REAL desde SharedPreferences
+        val prefs = requireContext().getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+        val userIdString = prefs.getString("USER_ID", null)
+        val userId = userIdString?.toLongOrNull()
+
+        if (userId == null) {
+            Toast.makeText(
+                requireContext(),
+                "Error: Usuario no válido. Inicia sesión nuevamente.",
+                Toast.LENGTH_LONG
+            ).show()
+            parentFragmentManager.popBackStack()
+            return
         }
 
         // Cargar carrito completo
@@ -74,7 +91,11 @@ class CheckoutFragment : Fragment(R.layout.fragment_checkout) {
             val ciudad = etCiudad.text.toString().trim()
 
             if (direccion.isEmpty() || distrito.isEmpty() || calle.isEmpty() || ciudad.isEmpty()) {
-                Toast.makeText(requireContext(), "Por favor completa todos los campos", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Por favor completa todos los campos",
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
             }
 
@@ -84,12 +105,23 @@ class CheckoutFragment : Fragment(R.layout.fragment_checkout) {
                 return@setOnClickListener
             }
 
-            procesarPagoCompleto(sessionId, direccion, distrito, calle, ciudad, items, progressBar, btnPagar)
+            procesarPagoCompleto(
+                sessionId,
+                userId,
+                direccion,
+                distrito,
+                calle,
+                ciudad,
+                items,
+                progressBar,
+                btnPagar
+            )
         }
     }
 
     private fun procesarPagoCompleto(
         sessionId: String,
+        userId: Long, // 👈 PARÁMETRO REAL
         direccion: String,
         distrito: String,
         calle: String,
@@ -104,9 +136,9 @@ class CheckoutFragment : Fragment(R.layout.fragment_checkout) {
                 btnPagar.isEnabled = false
                 btnPagar.text = "Procesando..."
 
-                // PASO 1: Crear compra
+                // PASO 1: Crear compra CON userId REAL
                 val compraDTO = CompraDTO(
-                    idUsuario = 0L, // El backend lo asigna automáticamente
+                    idUsuario = userId, // 👈 AQUÍ ESTÁ LA CORRECCIÓN
                     direccionEnvio = direccion,
                     distrito = distrito,
                     calle = calle,
@@ -116,14 +148,15 @@ class CheckoutFragment : Fragment(R.layout.fragment_checkout) {
 
                 val compraResponse = compraRepository.crearCompra(sessionId, compraDTO)
                 if (!compraResponse.isSuccessful) {
-                    mostrarError("Error al crear compra: ${compraResponse.code()}")
+                    val errorBody = compraResponse.errorBody()?.string()
+                    mostrarError("Error al crear compra: ${compraResponse.code()} - $errorBody")
                     return@launch
                 }
 
                 val compraCreada = compraResponse.body()!!
                 val compraId = compraCreada.idCompra!!
 
-                // PASO 2: Crear detalles de compra (ESTO ES LO QUE FALTABA)
+                // PASO 2: Crear detalles de compra
                 var todosLosDetallesCreados = true
                 for (item in items) {
                     val detalleDTO = DetalleCompraDTO(
@@ -134,9 +167,11 @@ class CheckoutFragment : Fragment(R.layout.fragment_checkout) {
                         subtotal = item.precioUnitario * item.cantidad
                     )
 
-                    val detalleResponse = detalleCompraRepository.crearDetalleCompra(sessionId, detalleDTO)
+                    val detalleResponse =
+                        detalleCompraRepository.crearDetalleCompra(sessionId, detalleDTO)
                     if (!detalleResponse.isSuccessful) {
-                        mostrarError("Error al crear detalle para libro ${item.tituloLibro}: ${detalleResponse.code()}")
+                        val errorBody = detalleResponse.errorBody()?.string()
+                        mostrarError("Error al crear detalle para libro ${item.tituloLibro}: ${detalleResponse.code()} - $errorBody")
                         todosLosDetallesCreados = false
                         break
                     }
@@ -149,7 +184,8 @@ class CheckoutFragment : Fragment(R.layout.fragment_checkout) {
                 // PASO 3: Crear preferencia de pago en Mercado Pago
                 val preferenciaResponse = compraRepository.crearPreferenciaPago(sessionId, compraId)
                 if (!preferenciaResponse.isSuccessful) {
-                    mostrarError("Error al crear preferencia de pago: ${preferenciaResponse.code()}")
+                    val errorBody = preferenciaResponse.errorBody()?.string()
+                    mostrarError("Error al crear preferencia de pago: ${preferenciaResponse.code()} - $errorBody")
                     return@launch
                 }
 
@@ -159,13 +195,18 @@ class CheckoutFragment : Fragment(R.layout.fragment_checkout) {
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(preference.initPoint))
                 startActivity(intent)
 
-                Toast.makeText(requireContext(), "Redirigiendo a Mercado Pago...", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Redirigiendo a Mercado Pago...",
+                    Toast.LENGTH_SHORT
+                ).show()
 
                 // PASO 5: Limpiar carrito después del pago exitoso
                 carritoViewModel.limpiarCarrito(sessionId)
 
                 // PASO 6: Navegar a confirmación
-                val fragment = PagoConfirmacionFragment.newInstance(compraId, preference.totalAmount)
+                val fragment =
+                    PagoConfirmacionFragment.newInstance(compraId, preference.totalAmount)
                 parentFragmentManager.beginTransaction()
                     .replace(R.id.fragmentContainer, fragment)
                     .addToBackStack(null)

@@ -63,6 +63,8 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                 .commit()
         }
 
+
+
         // Observamos resultado del login
         viewModel.loginResult.observe(viewLifecycleOwner) { response ->
             try {
